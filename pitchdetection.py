@@ -4,16 +4,16 @@ import wave
 import numpy as np
 from aubio import pitch
 
-from math import log2, pow
+from math import log, pow
 
 A4 = 440
 C0 = A4*pow(2, -4.75)
 name = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
-    
+
 def pitch_to_note(freq):
-    h = round(12*log2(freq/C0))
-    octave = h // 12
-    n = h % 12
+    h = round(12*log(freq/C0, 2))
+    octave = int(h // 12)
+    n = int(h % 12)
     return name[n] + str(octave)
 
 CHUNK = 1024
@@ -36,7 +36,7 @@ print("* recording")
 frames = []
 
 # Pitch
-tolerance = 0.4
+tolerance = 0.2
 downsample = 1
 win_s = 4096 // downsample # fft size
 hop_s = 1024  // downsample # hop size
@@ -52,7 +52,6 @@ for i in range(0, int(RATE / CHUNK * RECORD_SECONDS)):
     frames.append(buffer)
 
     signal = np.fromstring(buffer, dtype=np.float32)
-
     pitch = pitch_o(signal)[0]
     confidence = pitch_o.get_confidence()
     if pitch > 0:
@@ -61,17 +60,18 @@ for i in range(0, int(RATE / CHUNK * RECORD_SECONDS)):
         note = None
 
     if confidence > 0.9 and not note is None:
-        if note == prevNote:
-            noteCounter += 1
-        else:
-            noteCounter = 0
-        prevNote = note
-
-        if noteCounter>4 and not prevPrint == note:   
-            print(note)
-            #rint("{} / {} / {}".format(pitch, note, confidence))
-        
-            prevPrint = note
+        print("{} / {} / {}".format(pitch, note, confidence))
+        # if note == prevNote:
+        #     noteCounter += 1
+        # else:
+        #     noteCounter = 0
+        # prevNote = note
+        #
+        # if noteCounter>4 and not prevPrint == note:
+        #     print(note)
+        #
+        #
+        #     prevPrint = note
 
 
 print("* done recording")
