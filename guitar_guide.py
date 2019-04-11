@@ -267,6 +267,6 @@ class GuitarGuide:
 
 if __name__ == '__main__':
     multiprocessing.set_start_method("spawn")
-    skin_color_histogram = np.load("skin_color_histogram.npy")
+    skin_color_histogram = np.load("data/skin_color_histogram.npy")
     guitar_guide = GuitarGuide(skin_color_histogram)
     guitar_guide.root.mainloop()

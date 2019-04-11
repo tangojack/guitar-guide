@@ -35,7 +35,7 @@ if __name__ == "__main__":
 
     print(type(roi_hist))
     print(roi_hist)
-    np.save("skin_color_histogram", roi_hist)
+    np.save("data/skin_color_histogram", roi_hist)
 
     video_cap.release()
     cv2.waitKey(0)

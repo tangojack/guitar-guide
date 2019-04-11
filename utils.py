@@ -9,10 +9,10 @@ from scipy.signal import blackmanharris, fftconvolve
 from numpy import argmax, sqrt, mean, diff, log
 from matplotlib.mlab import find
 
-js = open('chords.json').read()
+js = open('data/chords.json').read()
 chord_data = json.loads(js)
 
-js = open('mappings.json').read()
+js = open('data/mappings.json').read()
 pixel_data = json.loads(js)
 fretboard_img =  cv2.imread('images/fretboard.jpg')
 
