@@ -19,7 +19,7 @@ def audio_record(stop_audio_process, queue):
     CHUNK = 1024
     FORMAT = pyaudio.paInt16
     CHANNELS = 1
-    RATE = 44100
+    RATE = 48000
     p = pyaudio.PyAudio() # object of class pyaudio.PyAudio is instantiated starts PortAudio
     # open an audio stream
     stream = p.open(format=FORMAT,
@@ -51,7 +51,12 @@ def audio_record(stop_audio_process, queue):
     i = 0
     combined_data = []
     while stop_audio_process.value is 0:
-        data = np.frombuffer(stream.read(CHUNK), dtype=np.int16)
+        try:
+            data = stream.read(CHUNK, exception_on_overflow = False)
+        except IOError as ex:
+            data = None
+            continue
+        data = np.frombuffer(data, dtype=np.int16)
         combined_data.extend(data)
         data_int = np.concatenate((data_int, data))
         data_energy_value = np.sum(square(data))
@@ -220,7 +225,11 @@ class GuitarGuide:
                 if not note is None:
                     # checking if note is in range of the guitar
                     octave = utils.get_trailing_number(note)
+                    invalid_notes = ['C#2', 'C2', 'D2', 'D#2', 'A2',
+                    'D#6', 'E6', 'F6', 'F#6', 'G6', 'G#6', 'A6', 'A#6', 'B6']
                     if not (octave <= 6 and octave >= 2):
+                        self.message.config(text=note + " out of guitar range")
+                    elif (note in invalid_notes):
                         self.message.config(text=note + " out of guitar range")
                     else:
                         # note is in the range of the guitar
@@ -237,20 +246,22 @@ class GuitarGuide:
                         else:
                             selected_key = chord[0]
                         # If it is not the root note of the chord the user selected, the user will try again until it is
-                        if key is selected_key:
-                            self.message.config(text=note + " is being played. The Chord Shapes are displayed below")
+                        if True:
+                            # self.message.config(text=note + " is being played. The Chord Shapes are displayed below")
                             (string, fret) = utils.image_processing(image_to_process, note, self.skin_color_histogram)
-                            # If there is no error in the Image Processing
                             if not string is -1:
-                                # The fretboard image will now show the root note alond with the other notes to complete the chord
-                                chords = utils.find_chords(chord, string, fret)
-                                if not chords:
-                                    self.message.config(text="No chord shapes found for the note being played")
-                                else:
-                                    self.images_array = []
-                                    self.image_counter = 0
-                                    self.images_array = utils.image_notes(chords)
-                                    self.cycle_through_images()
+                                self.message.config(text=note + "is being played. String " + str(string) + " : Fret: " + str(fret))
+                            # If there is no error in the Image Processing
+                            # if not string is -1:
+                            #     # The fretboard image will now show the root note alond with the other notes to complete the chord
+                            #     chords = utils.find_chords(chord, string, fret)
+                            #     if not chords:
+                            #         self.message.config(text="No chord shapes found for the note being played")
+                            #     else:
+                            #         self.images_array = []
+                            #         self.image_counter = 0
+                            #         self.images_array = utils.image_notes(chords)
+                            #         self.cycle_through_images()
                         else:
                             self.message.config(text=note + " is being played. It is not the root note")
 

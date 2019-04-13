@@ -21,7 +21,7 @@ def parabolic(f, x):
     yv = f[x] - 1/4. * (f[x-1] - f[x+1]) * (xv - x)
     return (xv, yv)
 
-def freq_from_autocorr(raw_data_signal, fs=44100):
+def freq_from_autocorr(raw_data_signal, fs=48000):
     corr = fftconvolve(raw_data_signal, raw_data_signal[::-1], mode='full')
     corr = corr[int(len(corr)/2):]
     d = diff(corr)
@@ -141,7 +141,7 @@ def image_processing(img, note, skin_color_histogram):
     edges = cv2.Canny(gray, 100, 200)
 
     lines = None
-    lines = cv2.HoughLinesP(edges, 1, np.pi/180, 80, maxLineGap=60, minLineLength=700)
+    lines = cv2.HoughLinesP(edges, 1, np.pi/180, 80, maxLineGap=100, minLineLength=700)
     if lines is not None and len(lines) >= 7:
         hough_1 = img.copy()
         for line in lines:
@@ -268,7 +268,11 @@ def image_processing(img, note, skin_color_histogram):
     roi = cropped_and_rotated[0:,int(min_x):int(max_x)]
 
     # part 6: Detect the skin color on the ROI using the skin colour Histogram
+    skin_color_histogram = np.load("data/skin_color_histogram.npy")
+    cv2.normalize(skin_color_histogram, skin_color_histogram, 0, 255, cv2.NORM_MINMAX)
+    # img_1 = img.copy()
     frame_hsv = cv2.cvtColor(roi, cv2.COLOR_BGR2HSV)
+
     dst = cv2.calcBackProject([frame_hsv], [0,1], skin_color_histogram, [0,180,0,256], 1)
     disc = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(5,5))
     cv2.filter2D(dst, -1, disc, dst)
@@ -280,7 +284,8 @@ def image_processing(img, note, skin_color_histogram):
     extRight = tuple(c[c[:, :, 0].argmax()][0])
     extBot = tuple(c[c[:, :, 1].argmax()][0])
     extTop = tuple(c[c[:, :, 1].argmin()][0])
-
     result_from_cv_algo = (1 - (extTop[0] / roi.shape[1])) * 100
+
     (string, fret) = get_fretboard_position(note, result_from_cv_algo)
+    # cv2.imshow("thresh", roi)
     return (string, fret)
