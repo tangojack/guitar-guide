@@ -152,9 +152,8 @@ def image_processing(img, note, skin_color_histogram):
         print("Hough Line not being Detected")
         return (-1, -1);
 
-    # cv2.imshow("Hough 1", hough_1)
-    outline = img.copy()
     # part 2: Get the top and bottom most line using functions of all the lines
+    outline = img.copy()
     sum_y = []
     for line in lines:
         x1, y1, x2, y2 = line[0]
@@ -172,7 +171,6 @@ def image_processing(img, note, skin_color_histogram):
 
     cv2.line(outline, (x1, y1), (x2, y2), (0, 255, 0), 3)
     cv2.line(outline, (x3, y3), (x4, y4), (0, 255, 0), 3)
-    # cv2.imshow("outline", outline)
 
     # part 3: crop and rotate
     (height, width, _) = img.shape
@@ -270,7 +268,6 @@ def image_processing(img, note, skin_color_histogram):
     # part 6: Detect the skin color on the ROI using the skin colour Histogram
     skin_color_histogram = np.load("data/skin_color_histogram.npy")
     cv2.normalize(skin_color_histogram, skin_color_histogram, 0, 255, cv2.NORM_MINMAX)
-    # img_1 = img.copy()
     frame_hsv = cv2.cvtColor(roi, cv2.COLOR_BGR2HSV)
 
     dst = cv2.calcBackProject([frame_hsv], [0,1], skin_color_histogram, [0,180,0,256], 1)
@@ -284,8 +281,9 @@ def image_processing(img, note, skin_color_histogram):
     extRight = tuple(c[c[:, :, 0].argmax()][0])
     extBot = tuple(c[c[:, :, 1].argmax()][0])
     extTop = tuple(c[c[:, :, 1].argmin()][0])
+    cv2.circle(roi, extTop, 5, (0,0,255), -1)
     result_from_cv_algo = (1 - (extTop[0] / roi.shape[1])) * 100
 
     (string, fret) = get_fretboard_position(note, result_from_cv_algo)
-    # cv2.imshow("thresh", roi)
+
     return (string, fret)
